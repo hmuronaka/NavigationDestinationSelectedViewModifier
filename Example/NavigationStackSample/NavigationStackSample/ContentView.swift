@@ -7,13 +7,13 @@
 
 import SwiftUI
     public enum ListType: Hashable {
-        case simpleInt, dataLoad, multiSections, fileList
+        case simpleInt, dataLoad, multiSections, fileList, fileList2
     }
  
 struct ContentView: View {
     @State private var path: NavigationPath = .init()
     
-    let types: [ListType] = [.simpleInt, .dataLoad, .multiSections, .fileList]
+    let types: [ListType] = [.simpleInt, .dataLoad, .multiSections, .fileList, .fileList2]
    
     var body: some View {
         // NOTE: path isn't updated 
@@ -35,6 +35,13 @@ struct ContentView: View {
                     case .fileList:
                         PlainFileList(currentDirectory: Bundle.main.bundleURL) { url in
                             Text(url.absoluteString)
+                        }
+                    case .fileList2:
+                        PlainFileList2(
+                            current: Bundle.main.bundleURL,
+                            paths:
+                                try! FileManager.default.contentsOfDirectory(at: Bundle.main.bundleURL, includingPropertiesForKeys: [.parentDirectoryURLKey, .creationDateKey, .fileSizeKey], options: [])) { url in
+                                    Text(url.absoluteString)
                         }
                     }
                 })

@@ -57,3 +57,40 @@ struct PlainFileList<Destination: View>: View {
         .navigationTitle(currentDirectory.lastPathComponent)
     }
 }
+
+struct PlainFileList2<Destination: View>: View {
+    
+    let current: URL
+    let paths: [URL]
+    @ViewBuilder let destination: (URL) -> Destination
+    @State private var selection: URL?
+    @State private var childPaths: [URL]?
+    
+    var body: some View {
+        List(selection: $selection) {
+            ForEach(paths, id: \.self) { url in
+                if FileManager.default.isDirectory(url: url) {
+                    NavigationLink(value: url) {
+                        Label(url.lastPathComponent, systemImage: "folder")
+                    }
+                } else {
+                    self.destination(url)
+                }
+                
+            }
+        }
+        .navigationDestination(selection: $selection, item: $childPaths ) { childPaths in
+            if let selection {
+                PlainFileList2(current: selection, paths: childPaths, destination: self.destination)
+            }
+        }
+        .onChange(of: selection, perform: { newValue in
+            if let newValue, FileManager.default.isDirectory(url: newValue) {
+                self.childPaths = try! FileManager.default.contentsOfDirectory(at: newValue, includingPropertiesForKeys: [.parentDirectoryURLKey, .creationDateKey, .fileSizeKey], options: [])
+            } else {
+                self.childPaths = nil
+            }
+        })
+        .navigationTitle(current.lastPathComponent)
+    }
+}
