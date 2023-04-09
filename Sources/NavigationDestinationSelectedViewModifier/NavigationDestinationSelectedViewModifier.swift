@@ -5,17 +5,12 @@ fileprivate struct NavigationDestinationViewModifier<SelectionValue: Hashable, V
     
     @Binding var selection: SelectionValue?
     @Binding var item: Value?
+    @State var isShowing = false
     @ViewBuilder let destination: (Value) -> Destination
     
     func body(content: Content) -> some View {
         content
-            .navigationDestination(isPresented: .init(get: {
-                item != nil
-            }, set: { newValue in
-                if !newValue {
-                    item = nil
-                }
-            })) {
+            .navigationDestination(isPresented: $isShowing) {
                 if let selected = item {
                     destination(selected)
                 } else {
@@ -23,8 +18,11 @@ fileprivate struct NavigationDestinationViewModifier<SelectionValue: Hashable, V
                 }
             }
             .onChange(of: item) { newValue in
-                if newValue == nil && selection != nil {
-                    selection = nil
+                isShowing = newValue != nil
+            }
+            .onChange(of: isShowing) { newValue in
+                if !newValue && item != nil {
+                    item = nil
                 }
             }
     }
